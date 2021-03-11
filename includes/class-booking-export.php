@@ -115,6 +115,7 @@ class Booking_Export {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-booking-export-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-booking-export-booking-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
@@ -156,7 +157,10 @@ class Booking_Export {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'init', $plugin_admin, 'init' );
+		$this->loader->add_action( 'save_post', $plugin_admin, 'save_post', 1, 2 );
 
+		$this->loader->add_action( 'admin_post_filter_by_period', $plugin_admin, 'admin_post_filter_by_period' );
 	}
 
 	/**

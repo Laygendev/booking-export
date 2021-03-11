@@ -1,32 +1,62 @@
+
+class PostTypeResource {
+	constructor() {
+	 	jQuery(document).on('click', '.post-type-owner .add-resource', this.addResource);
+	 	jQuery(document).on('click', '.post-type-owner .delete-resource', this.deleteResource);
+	}
+
+	addResource(evt) {
+		evt.preventDefault();
+
+		var clone = jQuery('.post-type-owner .bloc-form-to-duplicate:last').clone();
+
+		var n = parseInt(clone.data('number'));
+		n++;
+
+		clone.find('.key').html(n + 1);
+
+		clone.find('input, select').each(function() {
+			var name = jQuery(this).attr('name');
+			name = name.replace('[' + (n - 1) + ']', '[' + n + ']');
+			
+			jQuery(this).attr('name', name);
+
+			var id = jQuery(this).attr('id');
+			id = id.replace('_' + id);
+
+			jQuery(this).attr('id', id);
+		});
+
+		clone.find('label').each(function() {
+			var newFor = jQuery(this).attr('for');
+			newFor = newFor.replace('_' + newFor);
+
+			jQuery(this).attr('for', newFor);
+		});
+
+		clone.attr('data-number', n);
+
+		jQuery('.post-type-owner .sn-form').append(clone);
+	}
+
+	deleteResource(evt) {
+		evt.preventDefault()
+
+		if(window.confirm("Confirmer la suppression")) {
+			jQuery(this).closest('.bloc-form').fadeOut(400, function() {
+				jQuery(this).remove();
+			})
+		}
+	}
+}
+
 (function( $ ) {
 	'use strict';
 
-	/**
-	 * All of the code for your admin-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
+	new PostTypeResource();
+
+	$(document).ready(function() {
+    $('#example').DataTable();
+} );
 
 })( jQuery );

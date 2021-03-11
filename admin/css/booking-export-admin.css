@@ -2,3 +2,68 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+
+.sn-form .sn-form-group {
+  margin-bottom: 10px;
+}
+
+.sn-flex {
+  display: flex;
+  align-items: center;
+}
+
+.sn-text-center {
+  text-align: center;
+}
+
+.sn-text-right {
+  text-align: right;
+}
+
+.sn-flex-column {
+  flex-direction: column;
+}
+
+.sn-flex-row {
+  flex-direction: row;
+}
+
+.sn-w-10 {
+  width: 10%;
+}
+
+.sn-w-20 {
+  width: 20%;
+}
+
+.sn-w-30 {
+  width: 30%;
+}
+
+.sn-w-40 {
+  width: 40%;
+}
+
+.sn-w-50 {
+  width: 50%;
+}
+
+.sn-w-60 {
+  width: 60%;
+}
+
+.sn-w-70 {
+  width: 70%;
+}
+
+.sn-w-80 {
+  width: 80%;
+}
+
+.sn-w-90 {
+  width: 90%;
+}
+
+.sn-w-100 {
+  width: 100%;
+}

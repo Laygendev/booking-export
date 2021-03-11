@@ -99,5 +99,4 @@ class Booking_Export_Public {
 		wp_enqueue_script( $this->booking_export, plugin_dir_url( __FILE__ ) . 'js/booking-export-public.js', array( 'jquery' ), $this->version, false );
 
 	}
-
 }
