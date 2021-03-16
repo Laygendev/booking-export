@@ -67,3 +67,39 @@
 .sn-w-100 {
   width: 100%;
 }
+
+.sn-tabs .nav-item {
+  margin-top: 1px;
+  margin-bottom: -1px;
+}
+
+.sn-tabs .nav-item .nav-link {
+  background-color: #F0F8FF;
+  border-color: #F0F8FF #F0F8FF white;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 19px;
+  color: #6E7782;
+  padding: 1rem 1.4rem;
+  outline: none;
+  border-bottom: solid #F0F8FF 1px;
+}
+
+.sn-tabs .nav-item .nav-link.active {
+  display: block;
+  background-color: #F0F8FF;
+  border-color: #F0F8FF #F0F8FF #17AAF5;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 19px;
+  padding: 1rem 1.4rem;
+  outline: none;
+
+  color: #17AAF5;
+}
+
+.sn-tabs .nav-item .nav-link:hover {
+  border-color: #17AAF5;
+}

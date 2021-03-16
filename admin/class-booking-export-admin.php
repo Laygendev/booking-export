@@ -76,10 +76,15 @@ class Booking_Export_Admin {
 
 		$screen = get_current_screen();
 		
-		if ( in_array( $screen->id, array( 'reservation15_page_wpbc-dashboard' ) ) ) {
+		if ( in_array( $screen->id, array( 'reservation14_page_wpbc-dashboard' ) ) ) {
 			wp_enqueue_style( $this->booking_export . '-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css', array(), $this->version, 'all' );
 			wp_enqueue_style( $this->booking_export . '-bootstrap-datatable', 'https://cdn.datatables.net/v/bs4/dt-1.10.24/datatables.min.css', array(), $this->version, 'all' );
+			wp_enqueue_style( $this->booking_export . '-bootstrap-datatable-twitter', 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css', array(), $this->version, 'all' );
+
+			wp_register_style( 'jquery-ui', 'https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css' );
+    	wp_enqueue_style( 'jquery-ui' );  
 		}
+		
 		wp_enqueue_style( $this->booking_export, plugin_dir_url( __FILE__ ) . 'css/booking-export-admin.css', array(), $this->version, 'all' );
 
 	}
@@ -104,13 +109,12 @@ class Booking_Export_Admin {
 		 */
 
 		$screen = get_current_screen();
-		
-		if ( in_array( $screen->id, array( 'reservation15_page_wpbc-dashboard' ) ) ) {
+
+		if ( in_array( $screen->id, array( 'reservation14_page_wpbc-dashboard' ) ) ) {
 			wp_enqueue_script( $this->booking_export . '-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js', array( 'jquery' ), $this->version, false );
 			wp_enqueue_script( $this->booking_export . '-bootstrap-datatable', 'https://cdn.datatables.net/v/bs4/dt-1.10.24/datatables.min.js', array( 'jquery' ), $this->version, false );
+			wp_enqueue_script( $this->booking_export, plugin_dir_url( __FILE__ ) . 'js/booking-export-admin.js', array( 'jquery', 'jquery-ui-datepicker' ), $this->version, true );
 		}
-		wp_enqueue_script( $this->booking_export, plugin_dir_url( __FILE__ ) . 'js/booking-export-admin.js', array( 'jquery' ), $this->version, false );
-
 	}
 
 	public function register_sub_menu($menu_tags) {
@@ -119,10 +123,21 @@ class Booking_Export_Admin {
 	}
 
 	public function submenu_dashboard_page_callback() {
-		$start_date = "2021-03-01 00:00:00";
-		$end_date   = "2021-03-31 23:59:59";
+		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
+		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
+		$tab = isset($_GET['tab']) ? $_GET['tab'] : 'location';
 
-		$bookings = Booking_Class_Admin::get_booking_by_period($start_date, $end_date);
+		$entries = [];
+
+		switch ($tab) {
+			case 'location':
+				$entries = Booking_Class_Admin::get_booking_by_period($start_date, $end_date);
+				break;
+			case 'owner':
+				$entries = Booking_Class_Admin::get_owner_by_period($start_date, $end_date);
+				break;
+		}
+
 
 		$path = plugin_dir_path( __FILE__ );
 		include $path . 'partials/booking-export-admin-display-dashboard.php';
@@ -202,6 +217,13 @@ class Booking_Export_Admin {
 		$resources = (array) $_POST['resources'];
 		$resources = array_values($resources);
 
+		foreach ($resources as &$resource) {
+			$resource['id']              = (int) $resource['id'];
+			$resource['price_comission'] = (float) $resource['price_comission'];
+		}
+
+		unset($resource);
+
 		if ( get_post_meta( $post_id, 'resources', false ) ) {
 			update_post_meta( $post_id, 'resources', $resources );
 		} else {
@@ -216,6 +238,76 @@ class Booking_Export_Admin {
 	public function admin_post_filter_by_period() {
 		wp_verify_nonce('filter_by_period');
 
-		wp_redirect( admin_url( 'admin.php?page=wpbc-dashboard' ) );
+		wp_redirect( admin_url( 'admin.php?page=wpbc-dashboard&tab=' . $_POST['tab'] . '&start_date=' . $_POST['start_date'] . '&end_date=' . $_POST['end_date'] ) );
+	}
+
+	public function admin_post_export_by_period() {
+		wp_verify_nonce('export_by_period');
+
+		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
+		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
+
+		$bookings = Booking_Class_Admin::get_booking_by_period($start_date, $end_date);
+
+		$headers = ['Propriété', 'Propriétaire', 'Client', 'Période', 'Prix', 'Commission'];
+		$list = [];
+
+		foreach ($bookings as $booking) {
+			$list[] = [
+				'location_title' => $booking->title,
+				'owner_title' => $booking->post_title,
+				'customer' => $booking->form_data['name'] . ' ' . $booking->form_data['secondname'],
+				'period' => $booking->period,
+				'cost' => $booking->cost . '€',
+				'cmomission' => $booking->comission . '€ (' . $booking->resource_data['price_comission'] . '%)',
+			];
+		}
+
+		Booking_Export_CSV::generate('export-location-' . time() . '.csv', $headers, $list );
+	}
+
+	public function admin_post_export_by_owner_csv() {
+		wp_verify_nonce('export_by_owner_csv');
+
+		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
+		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
+		$owner_id = isset($_GET['owner_id'] ) ? (int) $_GET['owner_id'] : 0;
+
+		$owner = Booking_Class_Admin::get_owner_by_period($start_date, $end_date, $owner_id);
+
+		$headers = ['Propriétaire', 'Montant TTC', 'Comission TTC'];
+		$list = [];
+		$list[] = [
+			'owner' => $owner['name'],
+			'amount' => $owner['amount'],
+			'comission' => $owner['comission']
+		];
+
+		Booking_Export_CSV::generate('export-owner-' . $owner['id'] . '-' . time() . '.csv', $headers, $list );
+	}
+
+	public function admin_post_export_by_owner_pdf() {
+		wp_verify_nonce('export_by_owner_pdf');
+
+		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
+		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
+		$owner_id = isset($_GET['owner_id'] ) ? (int) $_GET['owner_id'] : 0;
+
+		$owner = Booking_Class_Admin::get_owner_by_period($start_date, $end_date, $owner_id);
+
+		$list = [];
+
+		if (!empty($owner['reservations'])) {
+			foreach ($owner['reservations'] as $reservation) {
+				$list[] = [
+					$reservation->title,
+					$reservation->form_data['name'] . ' ' . $reservation->form_data['secondname'],
+					$reservation->period,
+					$reservation->cost,
+				];
+			}
+		}
+
+		Booking_Export_PDF::generate('export-owner-' . $owner['id'] . '-' . time() . '.pdf', $owner, [$start_date, $end_date], $list, $owner['amount'] );
 	}
 }

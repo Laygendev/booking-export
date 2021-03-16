@@ -55,8 +55,23 @@ class PostTypeResource {
 
 	new PostTypeResource();
 
-	$(document).ready(function() {
-    $('#example').DataTable();
-} );
+	$('.table-datatable').DataTable({
+		"language": {
+			"lengthMenu": "Afficher _MENU_ éléments par page",
+			"zeroRecords": "Aucun élement",
+			"info": "Page _PAGE_/_PAGES_",
+			"infoEmpty": "Aucun élement disponible",
+			"infoFiltered": "(Filtrer sur _MAX_ élements au total)",
+			"search": "Rechercher : ",
+			"paginate": {
+				"previous": "Précédent",
+				"next": "Suivant"
+			}
+		}
+	});
+
+	$(".datepicker").datepicker({
+		dateFormat: "dd/mm/yy"
+	});
 
 })( jQuery );

@@ -105,11 +105,15 @@ class Booking_Export {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-booking-export-loader.php';
 
+
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-booking-export-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-booking-export-csv.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-booking-export-pdf.php';
+
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
@@ -124,7 +128,6 @@ class Booking_Export {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-booking-export-public.php';
 
 		$this->loader = new Booking_Export_Loader();
-
 	}
 
 	/**
@@ -161,6 +164,10 @@ class Booking_Export {
 		$this->loader->add_action( 'save_post', $plugin_admin, 'save_post', 1, 2 );
 
 		$this->loader->add_action( 'admin_post_filter_by_period', $plugin_admin, 'admin_post_filter_by_period' );
+		$this->loader->add_action( 'admin_post_export_by_period', $plugin_admin, 'admin_post_export_by_period' );
+		$this->loader->add_action( 'admin_post_export_by_owner_csv', $plugin_admin, 'admin_post_export_by_owner_csv' );
+		$this->loader->add_action( 'admin_post_export_by_owner_pdf', $plugin_admin, 'admin_post_export_by_owner_pdf' );
+		
 	}
 
 	/**
