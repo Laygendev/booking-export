@@ -28,10 +28,10 @@ class Booking_Export_CSV {
     $f = fopen('php://output', 'w');
 
     fputs($f, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
-    fputcsv($f, $headers);
+    fputcsv($f, $headers, get_option('booking_csv_export_separator', ','));
 
     foreach ($list as $fields) {
-        fputcsv($f, $fields);
+        fputcsv($f, $fields, get_option('booking_csv_export_separator', ','));
     }
   }
 }

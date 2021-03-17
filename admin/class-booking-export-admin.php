@@ -113,8 +113,9 @@ class Booking_Export_Admin {
 		if ( in_array( $screen->id, array( 'reservation14_page_wpbc-dashboard' ) ) ) {
 			wp_enqueue_script( $this->booking_export . '-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js', array( 'jquery' ), $this->version, false );
 			wp_enqueue_script( $this->booking_export . '-bootstrap-datatable', 'https://cdn.datatables.net/v/bs4/dt-1.10.24/datatables.min.js', array( 'jquery' ), $this->version, false );
-			wp_enqueue_script( $this->booking_export, plugin_dir_url( __FILE__ ) . 'js/booking-export-admin.js', array( 'jquery', 'jquery-ui-datepicker' ), $this->version, true );
 		}
+
+		wp_enqueue_script( $this->booking_export, plugin_dir_url( __FILE__ ) . 'js/booking-export-admin.js', array( 'jquery', 'jquery-ui-datepicker' ), $this->version, true );
 	}
 
 	public function register_sub_menu($menu_tags) {
@@ -245,11 +246,16 @@ class Booking_Export_Admin {
 		wp_verify_nonce('export_by_period');
 
 		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
-		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
+		$end_date   = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
+		$ids        = isset($_GET['ids']) ? explode('-', $_GET['ids']) : [];
 
-		$bookings = Booking_Class_Admin::get_booking_by_period($start_date, $end_date);
+		if (empty($ids)) {
+			$bookings = Booking_Class_Admin::get_booking_by_period($start_date, $end_date);
+		} else {
+			$bookings = Booking_Class_ADmin::get_booking_by_ids($ids);
+		}
 
-		$headers = ['Propriété', 'Propriétaire', 'Client', 'Période', 'Prix', 'Commission'];
+		$headers = ['Propriété', 'Propriétaire', 'Client', 'Date d\'arrivée', 'Date de départ', 'Nombre de nuit', 'Prix TTC (€)', 'Commission TTC (€)', 'Commission (%)'];
 		$list = [];
 
 		foreach ($bookings as $booking) {
@@ -257,9 +263,12 @@ class Booking_Export_Admin {
 				'location_title' => $booking->title,
 				'owner_title' => $booking->post_title,
 				'customer' => $booking->form_data['name'] . ' ' . $booking->form_data['secondname'],
-				'period' => $booking->period,
-				'cost' => $booking->cost . '€',
-				'cmomission' => $booking->comission . '€ (' . $booking->resource_data['price_comission'] . '%)',
+				'start_date' => $booking->start_date,
+				'end_date' => $booking->end_date,
+				'number_night' => $booking->number_night,
+				'cost' => $booking->cost,
+				'comission' => $booking->comission,
+				'percent_comission' => $booking->resource_data['price_comission'],
 			];
 		}
 
@@ -271,19 +280,23 @@ class Booking_Export_Admin {
 
 		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
 		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
-		$owner_id = isset($_GET['owner_id'] ) ? (int) $_GET['owner_id'] : 0;
+		$owner_ids = isset($_GET['ids'] ) ? explode('-', $_GET['ids']) : [];
 
-		$owner = Booking_Class_Admin::get_owner_by_period($start_date, $end_date, $owner_id);
+		$owners = Booking_Class_Admin::get_owner_by_period($start_date, $end_date, $owner_ids);
 
-		$headers = ['Propriétaire', 'Montant TTC', 'Comission TTC'];
+		$headers = ['Propriétaire', 'Montant Total TTC (€)', 'Solde dû Total TTC (€)', 'Commission Total TTC (€)'];
 		$list = [];
-		$list[] = [
-			'owner' => $owner['name'],
-			'amount' => $owner['amount'],
-			'comission' => $owner['comission']
-		];
 
-		Booking_Export_CSV::generate('export-owner-' . $owner['id'] . '-' . time() . '.csv', $headers, $list );
+		foreach ($owners as $owner) {
+			$list[] = [
+				'owner' => $owner['name'],
+				'amount' => $owner['amount'],
+				'solde' => $owner['amount'] - $owner['comission'],
+				'comission' => $owner['comission']
+			];
+		}
+
+		Booking_Export_CSV::generate('export-owner-' . time() . '.csv', $headers, $list );
 	}
 
 	public function admin_post_export_by_owner_pdf() {
@@ -291,23 +304,27 @@ class Booking_Export_Admin {
 
 		$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('01/m/Y');
 		$end_date  = isset($_GET['end_date'] ) ? $_GET['end_date'] : date('t/m/Y');
-		$owner_id = isset($_GET['owner_id'] ) ? (int) $_GET['owner_id'] : 0;
+		$owner_ids = isset($_GET['ids'] ) ? (int) $_GET['ids'] : 0;
 
-		$owner = Booking_Class_Admin::get_owner_by_period($start_date, $end_date, $owner_id);
+		$owners = Booking_Class_Admin::get_owner_by_period($start_date, $end_date, $owner_ids);
 
 		$list = [];
 
-		if (!empty($owner['reservations'])) {
-			foreach ($owner['reservations'] as $reservation) {
-				$list[] = [
-					$reservation->title,
-					$reservation->form_data['name'] . ' ' . $reservation->form_data['secondname'],
-					$reservation->period,
-					$reservation->cost,
-				];
+		if (!empty($owners)) {
+			foreach ($owners as $owner) {
+				foreach ($owner['reservations'] as $reservation) {
+					$list[] = [
+						$reservation->title,
+						$reservation->form_data['name'] . ' ' . $reservation->form_data['secondname'],
+						$reservation->start_date,
+						$reservation->end_date,
+						$reservation->number_night,
+						($reservation->cost - $reservation->comission) . ' €',
+					];
+				}
+
+				Booking_Export_PDF::generate('export-owner-' . $owner['id'] . '-' . time() . '.pdf', $owner, [$start_date, $end_date], $list, $owner['amount'] - $owner['comission'] );
 			}
 		}
-
-		Booking_Export_PDF::generate('export-owner-' . $owner['id'] . '-' . time() . '.pdf', $owner, [$start_date, $end_date], $list, $owner['amount'] );
 	}
 }

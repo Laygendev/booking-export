@@ -34,7 +34,7 @@ class Booking_Export_PDF {
     $pdf->AddPage();
     $pdf->SetFont('Arial', '', 9);
     $pdf->ImprovedTable(
-      ['Propriété', 'Client', 'Période', 'Prix TTC'], 
+      ['Propriété', 'Client', 'Date d\'arrivée', 'Date de départ', 'Nombre de nuit', 'Prix TTC'], 
       $data,
     );
     $pdf->TotalAmount($amount);
@@ -53,17 +53,17 @@ class CustomPDF extends FPDF {
     $this->Image($image[0], 65, 4, 70);
 
     $this->SetFont('Helvetica', 'B', 12);
-    $this->SetXY(20, 40);
+    $this->SetXY(10, 40);
     $this->cell(50, 10, $this->textDecoded('Synthèse du ' . $this->period[0] . ' au ' . $this->period[1]), 0, 0, 'L', 0);
 
     $this->SetFont('Helvetica', 'B', 12);
 
-    $this->SetXY(140, 40);
-    $this->cell(50, 8, $this->textDecoded('A l\'attention de'), 0, 0, 'R', 0);
+    $this->SetXY(160, 40);
+    $this->cell(40, 8, $this->textDecoded('A l\'attention de'), 0, 0, 'R', 0);
 
     $this->SetFont('Helvetica', '', 12);
-    $this->SetXY(140, 48);
-    $this->cell(50, 8, $this->textDecoded('Mr. ' . $this->owner['name']), 0, 0, 'R', 0);
+    $this->SetXY(160, 48);
+    $this->cell(40, 8, $this->textDecoded('Mr. ' . $this->owner['name']), 0, 0, 'R', 0);
   }
 
   function Footer() {
@@ -78,17 +78,17 @@ class CustomPDF extends FPDF {
   }
 
   function TotalAmount($amount) {
-    $this->SetX(20);
-    $this->cell(170, 8, $this->textDecoded('Montant total TTC: ' . $amount . '€'), 1, 0, 'R', 0);
+    $this->SetX(10);
+    $this->cell(190, 8, $this->textDecoded('Montant total TTC: ' . $amount . ' €'), 1, 0, 'R', 0);
   }
 
   // Better table
   function ImprovedTable($header, $data)
   {
-    $this->SetXY(20, 60);
+    $this->SetXY(10, 60);
     
       // Column widths
-      $w = array(50, 50, 50, 20);
+      $w = array(40, 40, 30, 30, 25, 25);
       // Header
       for($i=0;$i<count($header);$i++)
           $this->Cell($w[$i],7,$this->textDecoded($header[$i]),1,0,'C');
@@ -96,11 +96,13 @@ class CustomPDF extends FPDF {
       // Data
       foreach($data as $row)
       {
-          $this->SetX(20);
+          $this->SetX(10);
           $this->CellFit($w[0],6,$this->textDecoded($row[0]),1);
           $this->CellFit($w[1],6,$this->textDecoded($row[1]),1);
           $this->CellFit($w[2],6,$this->textDecoded($row[2]),1);
           $this->CellFit($w[3],6,$this->textDecoded($row[3]),1);
+          $this->CellFit($w[4],6,$this->textDecoded($row[4]),1);
+          $this->CellFit($w[5],6,$this->textDecoded($row[5]),1, 0, 'R');
           $this->Ln();
       }
       // Closing line

@@ -50,28 +50,76 @@ class PostTypeResource {
 	}
 }
 
+class ExportTable {
+	baseUrl
+
+	constructor() {
+		this.baseUrl = jQuery('.wpbc_dashboard .content .export-selected').attr('href');
+
+		jQuery(document).on('click', '.wpbc_dashboard .content table th input[type="checkbox"]', this.selectAll);
+		jQuery(document).on('click', '.wpbc_dashboard .content table td input[type="checkbox"]', this.selectEntry);
+	}
+
+	selectAll = (evt) => {
+		jQuery('.wpbc_dashboard .content table td input[type="checkbox"]').prop("checked", jQuery(evt.target).is(':checked'));
+		jQuery('.wpbc_dashboard .content table th input[type="checkbox"]').prop("checked", jQuery(evt.target).is(':checked'));
+
+		this.updateButtonExport();
+	}
+
+	selectEntry = () => {
+		this.updateButtonExport();
+	}
+
+	updateButtonExport() {
+		if(jQuery('.wpbc_dashboard .content table td input[type="checkbox"]:checked').length > 0) {
+			jQuery('.wpbc_dashboard .content .export-selected').removeClass('disabled');
+			var ids = [];
+			jQuery('.wpbc_dashboard .content table td input[type="checkbox"]:checked').each((index, item) => {
+				ids.push(jQuery(item).val());
+			});
+
+			var url = this.baseUrl + "&ids=" + ids.join('-');
+			jQuery('.wpbc_dashboard .content .export-selected').attr('href', url);
+		} else {
+			jQuery('.wpbc_dashboard .content .export-selected').addClass('disabled');
+
+			
+		}
+	}
+
+	goExport() {
+
+	}
+}
+
 (function( $ ) {
 	'use strict';
 
 	new PostTypeResource();
+	new ExportTable();
 
-	$('.table-datatable').DataTable({
-		"language": {
-			"lengthMenu": "Afficher _MENU_ éléments par page",
-			"zeroRecords": "Aucun élement",
-			"info": "Page _PAGE_/_PAGES_",
-			"infoEmpty": "Aucun élement disponible",
-			"infoFiltered": "(Filtrer sur _MAX_ élements au total)",
-			"search": "Rechercher : ",
-			"paginate": {
-				"previous": "Précédent",
-				"next": "Suivant"
+	if ($.fn.DataTable) {
+		$('.table-datatable').DataTable({
+			"language": {
+				"lengthMenu": "Afficher _MENU_ éléments par page",
+				"zeroRecords": "Aucun élement",
+				"info": "Page _PAGE_/_PAGES_",
+				"infoEmpty": "Aucun élement disponible",
+				"infoFiltered": "(Filtrer sur _MAX_ élements au total)",
+				"search": "Rechercher : ",
+				"paginate": {
+					"previous": "Précédent",
+					"next": "Suivant"
+				}
 			}
-		}
-	});
+		});
+	}
 
 	$(".datepicker").datepicker({
 		dateFormat: "dd/mm/yy"
 	});
 
+
+	$('[data-toggle="tooltip"]').tooltip()
 })( jQuery );

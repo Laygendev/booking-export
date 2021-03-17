@@ -18,11 +18,11 @@
   foreach ($resources as $key => $resource):
     ?>
     <div data-number="<?php echo $key; ?>" class="sn-flex bloc-form bloc-form-to-duplicate">
-      <span class="sn-w-10">Resource #<span class="key"><?php echo ($key + 1); ?></span></span>
+      <span class="sn-w-10">Location #<span class="key"><?php echo ($key + 1); ?></span></span>
 
       <div class="sn-w-100 sn-flex sn-flex-column">
         <div class="sn-w-100 sn-flex sn-form-group">
-          <label class="sn-w-10" for="resource_id_<?php echo $key; ?>">Resource ID</label>
+          <label class="sn-w-10" for="resource_id_<?php echo $key; ?>">Location</label>
           <select class="sn-w-100" id="resource_id_<?php echo $key; ?>" name="resources[<?php echo $key; ?>][id]">
             <?php
             foreach ($resources_def as $resource_def):
@@ -35,7 +35,7 @@
         </div>
 
         <div class="sn-w-100 sn-flex sn-form-group">
-          <label class="sn-w-10"  for="resource_price_<?php echo $key; ?>">Comission (€)</label>
+          <label class="sn-w-10"  for="resource_price_<?php echo $key; ?>">Commission (%)</label>
           <input class="sn-w-100" id="resource_price_<?php echo $key; ?>" type="number" name="resources[<?php echo $key; ?>][price_comission]" value="<?php echo $resource["price_comission"]; ?>" />
         </div>
       </div>

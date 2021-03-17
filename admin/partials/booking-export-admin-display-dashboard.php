@@ -14,7 +14,7 @@
 ?>
 
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
-<div id="wpbc-admin-page" class="wrap wpbc_page">
+<div id="wpbc-admin-page" class="wrap wpbc_page wpbc_dashboard">
   <h1 class="wpbc_header">
     <div class="wpbc_header_icon"></div>
     Tableau de bord
@@ -28,7 +28,7 @@
     
         <div class="col-2">
             <ul class="nav sn-tabs flex-column">
-                <li class="nav-item"><a class="nav-link <?php echo $tab == 'location' ? 'active': ''; ?>" href="<?php echo admin_url('admin.php?page=wpbc-dashboard&tab=location'); ?>">Propriétées</a></li>
+                <li class="nav-item"><a class="nav-link <?php echo $tab == 'location' ? 'active': ''; ?>" href="<?php echo admin_url('admin.php?page=wpbc-dashboard&tab=location'); ?>">Propriétés</a></li>
                 <li class="nav-item"><a class="nav-link <?php echo $tab == 'owner' ? 'active': ''; ?>" href="<?php echo admin_url('admin.php?page=wpbc-dashboard&tab=owner'); ?>">Propriétaires</a></li>
             </ul>
         </div>
@@ -60,7 +60,7 @@
 
 
             <div class="row mt-4">
-                <div class="col-12">
+                <div class="col-12 content">
                     <?php include $path . 'partials/booking-export-admin-display-dashboard-' . $tab . '.php'; ?>
                 </div>
             </div>

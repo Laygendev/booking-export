@@ -7,6 +7,10 @@
   margin-bottom: 10px;
 }
 
+.sn-form .bloc-form {
+  margin-bottom: 20px;
+}
+
 .sn-flex {
   display: flex;
   align-items: center;
